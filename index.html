@@ -48,7 +48,18 @@ header h1 { font-size: 16px; font-weight: 700; color: #ffffff; letter-spacing: 0
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
-.cell.black { background: var(--black-cell); cursor: default; border-color: var(--black-cell); }
+.cell.black {
+  cursor: default;
+  border-color: var(--black-cell);
+  background: linear-gradient(135deg, #1a1a2e, #2d1a4a, #1a1a2e, #0f0f1a, #2d1a4a);
+  background-size: 300% 300%;
+  animation: blackCellFlow 6s ease infinite;
+}
+@keyframes blackCellFlow {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
 .cell.white { background: #ffffff; color: var(--text); }
 .cell.white:hover { background: #f5eeff; }
 .cell.active-word { background: var(--accent-word); }
@@ -72,6 +83,13 @@ header h1 { font-size: 16px; font-weight: 700; color: #ffffff; letter-spacing: 0
   font-size: var(--cell-font);
   font-weight: 700;
   line-height: 1;
+}
+.cell-letter.drop-in {
+  animation: dropInLetter 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes dropInLetter {
+  from { opacity: 0; transform: translateY(-60%); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 #clue-overlay {
   display: none;
@@ -443,6 +461,17 @@ function commitAnswer() {
     if (!HINT_CELLS.has(r+','+c)) { userGrid[r][c] = val[i] || ''; checkedGrid[r][c] = null; }
   }
   renderGrid();
+  // 上から落ちてくるエフェクト（時間差あり）
+  for (let i = 0; i < word.len; i++) {
+    const r = selectedDir === 'down' ? word.row + i : word.row;
+    const c = selectedDir === 'across' ? word.col + i : word.col;
+    if (HINT_CELLS.has(r+','+c)) continue;
+    const el = getCellEl(r, c);
+    el.classList.remove('drop-in');
+    void el.offsetWidth;
+    el.style.animationDelay = (i * 40) + 'ms';
+    el.classList.add('drop-in');
+  }
   saveProgress();
   closePanel();
 }
